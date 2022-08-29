@@ -1,15 +1,34 @@
 const { network, ethers } = require("hardhat")
 const { developmentChains } = require("../helper-hardhat-config")
 const { verify } = require("../utils/verify")
+const { storeImages } = require("../utils/uploadToPinata")
+
+const imagesLocation = "./images/randomNft"
+
+const metadataTemplate = {
+    name: "",
+    description: "",
+    image: "",
+    attributes: [
+        {
+            trait_type: "cuteness",
+            level: 100,
+        },
+    ],
+}
 
 module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId
+    let tokenUris
+
+    if (process.env.UPLOAD_TO_PINATA == "true") {
+        tokenUris = await handleTokenUris()
+    }
 
     let vrfCoordinatorV2Address, subscriptionId
 
-    console.log("----------------------------------------------")
     if (developmentChains.includes(network.name)) {
         const vrfCoordinatorV2Mock = await ethers.getContract(
             "VRFCoordinatorV2Mock"
@@ -23,21 +42,30 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         subscriptionId = networkConfig[chainId].subscriptionId
     }
     console.log("----------------------------------------------")
-    const args = [
-        vrfCoordinatorV2Address,
-        subscriptionId,
-        networkConfig[chainId].gasLane,
-        networkConfig[chainId].callbackGasLimit,
-        // tokenUris,
-        networkConfig[chainId].mintFee,
-    ]
-    if (
-        !developmentChains.includes(network.name) &&
-        process.env.ETHERSCAN_API_KEY
-    ) {
-        await verify(basicNft.address, args)
-    }
-    console.log("----------------------------------------------")
+
+    // const args = [
+    //     vrfCoordinatorV2Address,
+    //     subscriptionId,
+    //     networkConfig[chainId].gasLane,
+    //     networkConfig[chainId].callbackGasLimit,
+    //     // tokenUris,
+    //     networkConfig[chainId].mintFee,
+    // ]
+    // if (
+    //     !developmentChains.includes(network.name) &&
+    //     process.env.ETHERSCAN_API_KEY
+    // ) {
+    //     await verify(basicNft.address, args)
+    // }
+    // console.log("----------------------------------------------")
 }
 
-module.exports.tags = ["all", "randomIpfsNft", "main"]
+async function handleTokenUris() {
+    tokenUris = []
+    // store the Image in IPFS
+    // store the metadata in IPFS
+
+    return tokenUris
+}
+
+module.exports.tags = ["all", "randomipfs", "main"]
