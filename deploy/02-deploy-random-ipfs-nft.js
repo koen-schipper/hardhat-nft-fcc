@@ -20,15 +20,18 @@ const metadataTemplate = {
     ],
 }
 
+let tokenUris = [
+    "ipfs://QmbGEKnRFretvqYpH7czU5g4yof5parYmh6KkHmZrCkFrX",
+    "ipfs://QmSe2UJtQf6EeGExA1it78vfe5u5jk8s5LSjhezBF1gGJh",
+    "ipfs://QmazYVuf4J2NbJaJVxsSMua8tq8TsYRE4KocSfbxyLDQU2",
+]
+
+const FUND_AMOUNT = "1000000000000000000000"
+
 module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId
-    let tokenUris = [
-        "ipfs://QmbGEKnRFretvqYpH7czU5g4yof5parYmh6KkHmZrCkFrX",
-        "ipfs://QmSe2UJtQf6EeGExA1it78vfe5u5jk8s5LSjhezBF1gGJh",
-        "ipfs://QmazYVuf4J2NbJaJVxsSMua8tq8TsYRE4KocSfbxyLDQU2",
-    ]
 
     if (process.env.UPLOAD_TO_PINATA == "true") {
         tokenUris = await handleTokenUris()
@@ -44,6 +47,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         const tx = await vrfCoordinatorV2Mock.createSubscription()
         const txReceipt = await tx.wait(1)
         subscriptionId = txReceipt.events[0].args.subId
+        await vrfCoordinatorV2Mock.fundSubscription(subscriptionId, FUND_AMOUNT)
     } else {
         vrfCoordinatorV2Address = networkConfig[chainId].vrfCoordinatorV2
         subscriptionId = networkConfig[chainId].subscriptionId
